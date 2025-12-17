@@ -1,11 +1,13 @@
 const pool = require('../../db');
 const queries=require('./queries');
+const dayjs = require("dayjs");
 
 const getStudents=(req,res)=>{
     pool.query(queries.getStudents,(error,results)=>{
         if (error) throw error;
         res.status(200).json(results.rows);
-    });
+    }
+);
 }
 
 const getstudentbyId=(req,res)=>{
@@ -18,18 +20,31 @@ const getstudentbyId=(req,res)=>{
 
 const addStudent=(req,res)=>{
     const {std_id,std_name,std_marks,std_email} =req.body;
+
+    const dates = dayjs().format("DD-MM-YYYY HH:mm:ss");
+   
+     console.log("Inserted date:", dates);
+
+
     pool.query(queries.checkemail,[std_email],(error,results)=>{
-      if (error) throw error;
+      if (error)  {
+      return res.status(500).send(error.message);
+    }
         if (results.rows.length) {
             res.send("email already exits");
         }
 
-        pool.query(queries.addStudent,[std_id, std_name,std_marks,std_email],(error,results)=>{
-            if (error) throw error;
+        pool.query(queries.addStudent,[std_id, std_name, std_marks, std_email, dates],(error,results)=>{
+            if (error) {
+          return res.status(500).send(error.message);
+        }
             res.status(201).send("student added successfully");
+    
         });
     });
 };
+
+
 
 const removeStudent=(req,res)=>{
     const id =parseInt(req.params.id);
